@@ -120,7 +120,7 @@ export default class ThingsLink extends Plugin {
 				} else {
 					let fileName = urlEncode(fileTitle.name);
 					fileName = fileName.replace(/\.md$/, "");
-					const obsidianDeepLink = this.app.getObsidianUrl(fileTitle);
+					const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
 					const encodedLink = urlEncode(obsidianDeepLink);
 					createProject(fileName, encodedLink);
 				}
@@ -169,7 +169,7 @@ export default class ThingsLink extends Plugin {
 				if (fileTitle == null) {
 					return;
 				} else {
-					const obsidianDeepLink = this.app.getObsidianUrl(fileTitle);
+					const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
 					const encodedLink = urlEncode(obsidianDeepLink);
 					const line = getCurrentLine(editor, view);
 					const task = prepareTask(line);
