@@ -1,18 +1,18 @@
-import ThingsLink from './main';
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import ThingsLink from "./main";
+import { App, PluginSettingTab, Setting } from "obsidian";
 
 export enum LinkPlace {
 	FIRST_HEADING = "first_heading",
-	PROPERTY = "property"
+	PROPERTY = "property",
 }
 
 export interface ThingsSettings {
-	linkPlace: LinkPlace
+	linkPlace: LinkPlace;
 }
 
 export const DEFAULT_SETTINGS: Partial<ThingsSettings> = {
-	linkPlace: LinkPlace.FIRST_HEADING
-}
+	linkPlace: LinkPlace.FIRST_HEADING,
+};
 
 export class ThingsSettingTab extends PluginSettingTab {
 	plugin: ThingsLink;
@@ -23,22 +23,22 @@ export class ThingsSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		let { containerEl } = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Link place')
-			.setDesc('Where to add things link')
-			.addDropdown((component) => 
+			.setName("Link place")
+			.setDesc("Where to add things link")
+			.addDropdown((component) =>
 				component
 					.addOption(LinkPlace.FIRST_HEADING, "after first heading")
-					.addOption(LinkPlace.PROPERTY, "in \"things\" property")
+					.addOption(LinkPlace.PROPERTY, 'in "things" property')
 					.setValue(this.plugin.settings.linkPlace)
 					.onChange(async (value) => {
 						this.plugin.settings.linkPlace = value as LinkPlace;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 	}
 }
