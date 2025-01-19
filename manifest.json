@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-things-link-by-puzan",
 	"name": "Things Link (by Puzan)",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"minAppVersion": "1.7.2",
 	"description": "Seamlessly create Things tasks and projects from Obsidian",
 	"author": "@puzan",
