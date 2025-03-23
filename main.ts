@@ -6,6 +6,7 @@ import {
 	LinkPlace,
 	ProjectTitleSource,
 } from "settings";
+import { Notice } from "obsidian";
 
 function getCurrentLine(editor: Editor, view: MarkdownView) {
 	const lineNumber = editor.getCursor().line;
@@ -75,6 +76,39 @@ function getProjectTitle(view: MarkdownView, settings: ThingsSettings): string {
 
 	// Fallback to file name if no other source provided a title
 	return file.name.replace(/\.md$/, "");
+}
+
+function hasProjectLink(view: MarkdownView, settings: ThingsSettings): boolean {
+	const file = view.file;
+	if (!file) return false;
+
+	switch (settings.linkPlace) {
+		case LinkPlace.PROPERTY: {
+			// Check for link in frontmatter
+			const metadata = view.app.metadataCache.getFileCache(file);
+			if (metadata?.frontmatter?.things) {
+				return true;
+			}
+			break;
+		}
+		case LinkPlace.FIRST_HEADING: {
+			// Check for link after heading
+			const content = view.editor.getValue();
+			const lines = content.split("\n");
+			const h1Index = lines.findIndex((line) => line.startsWith("# "));
+			if (h1Index !== -1 && h1Index + 2 < lines.length) {
+				const linkLine = lines[h1Index + 2];
+				if (linkLine.includes("things:///show?id=")) {
+					return true;
+				}
+			}
+			break;
+		}
+		default:
+			console.log("Unsupported LinkPlace setting");
+	}
+
+	return false;
 }
 
 export default class ThingsLink extends Plugin {
@@ -159,13 +193,16 @@ export default class ThingsLink extends Plugin {
 				const fileTitle = workspace.getActiveFile();
 				if (fileTitle == null) {
 					return;
-				} else {
-					const title = getProjectTitle(view, this.settings);
-					const fileName = urlEncode(title);
-					const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
-					const encodedLink = urlEncode(obsidianDeepLink);
-					createProject(fileName, encodedLink);
 				}
+				if (hasProjectLink(view, this.settings)) {
+					new Notice("Project link already exists in this note");
+					return;
+				}
+				const title = getProjectTitle(view, this.settings);
+				const fileName = urlEncode(title);
+				const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
+				const encodedLink = urlEncode(obsidianDeepLink);
+				createProject(fileName, encodedLink);
 			},
 		});
 
