@@ -51,27 +51,33 @@ export class ThingsSettingTab extends PluginSettingTab {
 			);
 
 		containerEl.createEl("h3", { text: "Project Title Sources" });
-		
+
 		const sourcesContainer = containerEl.createDiv();
 		sourcesContainer.createEl("p", {
 			text: "Configure the order of sources used to determine the project title in Things. The first available source from the list will be used. If no sources are available, the file name will be used as a fallback.",
 		});
 		sourcesContainer.createEl("p", {
 			text: "Available sources:",
-			attr: { style: "margin-top: 8px; font-weight: bold;" }
+			attr: { style: "margin-top: 8px; font-weight: bold;" },
 		});
-		sourcesContainer.createEl("ul", {
-			text: "",
-			attr: { style: "margin: 4px 0 16px 0; padding-left: 20px;" }
-		}).createEl("li", {
-			text: "First H1 Heading - Uses the first heading of level 1 (#) in the document",
-		}).createEl("li", {
-			text: "First Alias - Uses the first alias from the document's frontmatter",
-		}).createEl("li", {
-			text: "File Name - Uses the document's filename (without .md extension)",
-		});
+		sourcesContainer
+			.createEl("ul", {
+				text: "",
+				attr: { style: "margin: 4px 0 16px 0; padding-left: 20px;" },
+			})
+			.createEl("li", {
+				text: "First H1 Heading - Uses the first heading of level 1 (#) in the document",
+			})
+			.createEl("li", {
+				text: "First Alias - Uses the first alias from the document's frontmatter",
+			})
+			.createEl("li", {
+				text: "File Name - Uses the document's filename (without .md extension)",
+			});
 
-		const list = sourcesContainer.createEl("ul", { cls: "project-title-sources-list" });
+		const list = sourcesContainer.createEl("ul", {
+			cls: "project-title-sources-list",
+		});
 		list.style.listStyle = "none";
 		list.style.padding = "0";
 
@@ -89,7 +95,7 @@ export class ThingsSettingTab extends PluginSettingTab {
 
 			li.createEl("span", {
 				text: this.getSourceDisplayName(source),
-				attr: { style: "flex: 1" }
+				attr: { style: "flex: 1" },
 			});
 
 			const removeButton = li.createEl("button", {
@@ -132,7 +138,9 @@ export class ThingsSettingTab extends PluginSettingTab {
 				e.preventDefault();
 				const source = e.dataTransfer?.getData("text/plain");
 				if (source) {
-					const oldIndex = sources.indexOf(source as ProjectTitleSource);
+					const oldIndex = sources.indexOf(
+						source as ProjectTitleSource,
+					);
 					const newIndex = Array.from(list.children).indexOf(li);
 					sources.splice(oldIndex, 1);
 					sources.splice(newIndex, 0, source as ProjectTitleSource);
@@ -153,7 +161,7 @@ export class ThingsSettingTab extends PluginSettingTab {
 		if (availableSources.length > 0) {
 			const dropdown = addSourceContainer.createEl("select");
 			availableSources.forEach((source) => {
-				const option = dropdown.createEl("option", {
+				dropdown.createEl("option", {
 					value: source,
 					text: this.getSourceDisplayName(source),
 				});

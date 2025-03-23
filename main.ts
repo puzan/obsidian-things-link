@@ -1,4 +1,10 @@
-import { Editor, EditorPosition, MarkdownView, Plugin, parseFrontMatterAliases } from "obsidian";
+import {
+	Editor,
+	EditorPosition,
+	MarkdownView,
+	Plugin,
+	parseFrontMatterAliases,
+} from "obsidian";
 import {
 	ThingsSettingTab,
 	ThingsSettings,
@@ -200,7 +206,9 @@ export default class ThingsLink extends Plugin {
 				}
 				const title = getProjectTitle(view, this.settings);
 				const fileName = urlEncode(title);
-				const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
+				const obsidianDeepLink = (this.app as any).getObsidianUrl(
+					fileTitle,
+				);
 				const encodedLink = urlEncode(obsidianDeepLink);
 				createProject(fileName, encodedLink);
 			},
@@ -248,7 +256,9 @@ export default class ThingsLink extends Plugin {
 				if (fileTitle == null) {
 					return;
 				} else {
-					const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
+					const obsidianDeepLink = (this.app as any).getObsidianUrl(
+						fileTitle,
+					);
 					const encodedLink = urlEncode(obsidianDeepLink);
 					const line = getCurrentLine(editor, view);
 					const task = prepareTask(line);
