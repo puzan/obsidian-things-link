@@ -1,9 +1,10 @@
-import { Editor, EditorPosition, MarkdownView, Plugin } from "obsidian";
+import { Editor, EditorPosition, MarkdownView, Plugin, parseFrontMatterAliases } from "obsidian";
 import {
 	ThingsSettingTab,
 	ThingsSettings,
 	DEFAULT_SETTINGS,
 	LinkPlace,
+	ProjectTitleSource,
 } from "settings";
 
 function getCurrentLine(editor: Editor, view: MarkdownView) {
@@ -33,6 +34,47 @@ function createProject(title: string, deepLink: string) {
 function createTask(line: string, deepLink: string) {
 	const task = `things:///add?title=${line}&notes=${deepLink}&x-success=obsidian://task-id`;
 	window.open(task);
+}
+
+function getProjectTitle(view: MarkdownView, settings: ThingsSettings): string {
+	const file = view.file;
+	if (!file) return "";
+
+	for (const source of settings.projectTitleSources) {
+		let title = "";
+		switch (source) {
+			case ProjectTitleSource.FIRST_H1: {
+				const content = view.editor.getValue();
+				const h1Match = content.match(/^# (.*)$/m);
+				if (h1Match) {
+					title = h1Match[1];
+					break;
+				}
+				break;
+			}
+			case ProjectTitleSource.FIRST_ALIAS: {
+				const metadata = view.app.metadataCache.getFileCache(file);
+				if (metadata) {
+					const aliases = parseFrontMatterAliases(metadata);
+					if (aliases && aliases.length > 0) {
+						title = aliases[0];
+						break;
+					}
+				}
+				break;
+			}
+			case ProjectTitleSource.FILE_NAME: {
+				title = file.name.replace(/\.md$/, "");
+				break;
+			}
+		}
+		if (title) {
+			return title;
+		}
+	}
+
+	// Fallback to file name if no other source provided a title
+	return file.name.replace(/\.md$/, "");
 }
 
 export default class ThingsLink extends Plugin {
@@ -118,8 +160,8 @@ export default class ThingsLink extends Plugin {
 				if (fileTitle == null) {
 					return;
 				} else {
-					let fileName = urlEncode(fileTitle.name);
-					fileName = fileName.replace(/\.md$/, "");
+					const title = getProjectTitle(view, this.settings);
+					const fileName = urlEncode(title);
 					const obsidianDeepLink = (this.app as any).getObsidianUrl(fileTitle);
 					const encodedLink = urlEncode(obsidianDeepLink);
 					createProject(fileName, encodedLink);
