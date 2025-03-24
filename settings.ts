@@ -12,14 +12,21 @@ export enum ProjectTitleSource {
 	FILE_NAME = "file_name",
 }
 
+export enum LinkType {
+	OBSIDIAN = "obsidian",
+	ID_LINK = "id_link",
+}
+
 export interface ThingsSettings {
 	linkPlace: LinkPlace;
 	projectTitleSources: ProjectTitleSource[];
+	linkType: LinkType;
 }
 
 export const DEFAULT_SETTINGS: Partial<ThingsSettings> = {
 	linkPlace: LinkPlace.FIRST_HEADING,
 	projectTitleSources: [ProjectTitleSource.FILE_NAME],
+	linkType: LinkType.OBSIDIAN,
 };
 
 export class ThingsSettingTab extends PluginSettingTab {
@@ -46,6 +53,20 @@ export class ThingsSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.linkPlace)
 					.onChange(async (value) => {
 						this.plugin.settings.linkPlace = value as LinkPlace;
+						await this.plugin.saveSettings();
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Link type")
+			.setDesc("What type of link to use for notes")
+			.addDropdown((component) =>
+				component
+					.addOption(LinkType.OBSIDIAN, "Obsidian link")
+					.addOption(LinkType.ID_LINK, "ID link")
+					.setValue(this.plugin.settings.linkType)
+					.onChange(async (value) => {
+						this.plugin.settings.linkType = value as LinkType;
 						await this.plugin.saveSettings();
 					}),
 			);

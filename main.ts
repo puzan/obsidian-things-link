@@ -4,6 +4,7 @@ import {
 	MarkdownView,
 	Plugin,
 	parseFrontMatterAliases,
+	TFile,
 } from "obsidian";
 import {
 	ThingsSettingTab,
@@ -11,6 +12,7 @@ import {
 	DEFAULT_SETTINGS,
 	LinkPlace,
 	ProjectTitleSource,
+	LinkType,
 } from "settings";
 import { Notice } from "obsidian";
 
@@ -194,7 +196,7 @@ export default class ThingsLink extends Plugin {
 		this.addCommand({
 			id: "create-things-project",
 			name: "Create Things Project",
-			editorCallback: (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				const workspace = this.app.workspace;
 				const fileTitle = workspace.getActiveFile();
 				if (fileTitle == null) {
@@ -206,9 +208,7 @@ export default class ThingsLink extends Plugin {
 				}
 				const title = getProjectTitle(view, this.settings);
 				const fileName = urlEncode(title);
-				const obsidianDeepLink = (this.app as any).getObsidianUrl(
-					fileTitle,
-				);
+				const obsidianDeepLink = await this.generateDeepLink(fileTitle);
 				const encodedLink = urlEncode(obsidianDeepLink);
 				createProject(fileName, encodedLink);
 			},
@@ -250,15 +250,14 @@ export default class ThingsLink extends Plugin {
 		this.addCommand({
 			id: "create-things-task",
 			name: "Create Things Task",
-			editorCallback: (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				const workspace = this.app.workspace;
 				const fileTitle = workspace.getActiveFile();
 				if (fileTitle == null) {
 					return;
 				} else {
-					const obsidianDeepLink = (this.app as any).getObsidianUrl(
-						fileTitle,
-					);
+					const obsidianDeepLink =
+						await this.generateDeepLink(fileTitle);
 					const encodedLink = urlEncode(obsidianDeepLink);
 					const line = getCurrentLine(editor, view);
 					const task = prepareTask(line);
@@ -267,6 +266,7 @@ export default class ThingsLink extends Plugin {
 			},
 		});
 	}
+
 	onunload() {}
 
 	async loadSettings() {
@@ -279,5 +279,35 @@ export default class ThingsLink extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	private getObsidianUrl(file: TFile): string {
+		return (this.app as any).getObsidianUrl(file);
+	}
+
+	private async generateDeepLink(file: TFile): Promise<string> {
+		if (this.settings.linkType === LinkType.ID_LINK) {
+			// Проверяем наличие плагина ID Link
+			const idLinkPlugin = (this.app as any).plugins.plugins["id-link"];
+			if (!idLinkPlugin) {
+				new Notice(
+					"ID Link plugin is not installed. Using default Obsidian link.",
+				);
+				return this.getObsidianUrl(file);
+			}
+
+			// Пытаемся получить ID-ссылку
+			const idLink = await idLinkPlugin.findIdAndGenerateLink(file);
+			if (!idLink) {
+				new Notice(
+					"No ID found in the file. Using default Obsidian link.",
+				);
+				return this.getObsidianUrl(file);
+			}
+
+			return idLink;
+		}
+
+		return this.getObsidianUrl(file);
 	}
 }

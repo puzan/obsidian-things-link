@@ -42,10 +42,39 @@ Seamlessly create [Things](https://culturedcode.com/things/) tasks and projects 
 - Tasks are created in Things Inbox for easy organization
 - Preserves original line content as task title
 
+### Link Types
+
+- Two types of links supported for bidirectional linking:
+  - Standard Obsidian links (default)
+  - ID-based links (requires [ID Link](https://github.com/puzan/obsidian-id-link) plugin)
+- Automatic fallback to standard Obsidian links if:
+  - ID Link plugin is not installed
+  - No ID found in the note
+
 ### Commands
 
 - `Create Things Project` - Creates a new Things project from the current note
 - `Create Things Task` - Creates a new Things task from the current line
+
+## Settings
+
+### Base Settings
+
+- **Link place** - Choose where to add Things links:
+  - After first heading
+  - In frontmatter as "things" property
+- **Link type** - Choose what type of links to use:
+  - Obsidian link - Standard Obsidian links
+  - ID link - Links based on unique IDs (requires ID Link plugin)
+
+### Project Title Sources
+
+Configure the order of sources used to determine the project title in Things:
+- First H1 heading in the note
+- First alias from frontmatter
+- Note filename
+
+The first available source from the list will be used. If no sources are available, the file name will be used as a fallback.
 
 ## Development
 
