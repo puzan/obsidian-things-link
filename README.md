@@ -38,9 +38,15 @@ Seamlessly create [Things](https://culturedcode.com/things/) tasks and projects 
 ### Task Creation
 
 - Create Things tasks from any line in your Obsidian note
+- Create tasks from selected text
 - Automatic bidirectional linking between tasks and notes
 - Tasks are created in Things Inbox for easy organization
 - Preserves original line content as task title
+- Automatically creates markdown links to tasks in your note
+- Smart task title extraction:
+  - Uses selected text if available
+  - Extracts task title from current line if no selection
+  - Removes non-alphanumeric characters from task titles
 
 ### Link Types
 

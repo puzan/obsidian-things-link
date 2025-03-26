@@ -16,13 +16,7 @@ import {
 } from "settings";
 import { Notice } from "obsidian";
 
-function getCurrentLine(editor: Editor, view: MarkdownView) {
-	const lineNumber = editor.getCursor().line;
-	const lineText = editor.getLine(lineNumber);
-	return lineText;
-}
-
-function prepareTask(line: string) {
+function cleanupLineForTaskName(line: string) {
 	line = line.trim();
 	//remove all leading non-alphanumeric characters
 	line = line.replace(/^\W+|\W+$/, "");
@@ -217,52 +211,70 @@ export default class ThingsLink extends Plugin {
 		this.registerObsidianProtocolHandler("task-id", async (id) => {
 			const taskID = id["x-things-id"];
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+
 			if (view == null) {
 				return;
+			}
+
+			const selection = view.editor.getSelection();
+			let line: string;
+			let startRange: EditorPosition;
+			let endRange: EditorPosition;
+
+			if (selection) {
+				line = selection;
+				startRange = view.editor.getCursor("from");
+				endRange = view.editor.getCursor("to");
 			} else {
-				const editor = view.editor;
-				const currentLine = getCurrentLine(editor, view);
+				const cursor = view.editor.getCursor();
+				const currentLine = view.editor.getLine(cursor.line);
 				const firstLetterIndex = currentLine.search(/[a-zA-Z]|[0-9]/);
-				const line = currentLine.substring(
+				line = currentLine.substring(
 					firstLetterIndex,
 					currentLine.length,
 				);
-				const editorPosition = view.editor.getCursor();
-				const lineLength = view.editor.getLine(
-					editorPosition.line,
-				).length;
-				const startRange: EditorPosition = {
-					line: editorPosition.line,
+				const lineLength = currentLine.length;
+
+				startRange = {
+					line: cursor.line,
 					ch: firstLetterIndex,
 				};
-				const endRange: EditorPosition = {
-					line: editorPosition.line,
+				endRange = {
+					line: cursor.line,
 					ch: lineLength,
 				};
-				view.editor.replaceRange(
-					`[${line}](things:///show?id=${taskID})`,
-					startRange,
-					endRange,
-				);
 			}
+
+			view.editor.replaceRange(
+				`[${line}](things:///show?id=${taskID})`,
+				startRange,
+				endRange,
+			);
 		});
 
 		this.addCommand({
 			id: "create-things-task",
 			name: "Create Things Task",
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				const workspace = this.app.workspace;
-				const fileTitle = workspace.getActiveFile();
+				const fileTitle = this.app.workspace.getActiveFile();
 				if (fileTitle == null) {
 					return;
-				} else {
-					const obsidianDeepLink =
-						await this.generateDeepLink(fileTitle);
-					const encodedLink = urlEncode(obsidianDeepLink);
-					const line = getCurrentLine(editor, view);
-					const task = prepareTask(line);
-					createTask(task, encodedLink);
 				}
+
+				const obsidianDeepLink = await this.generateDeepLink(fileTitle);
+				const encodedLink = urlEncode(obsidianDeepLink);
+				let task;
+
+				const selection = editor.getSelection();
+				if (selection) {
+					task = selection;
+				} else {
+					const lineNumber = editor.getCursor().line;
+					const lineText = editor.getLine(lineNumber);
+					task = cleanupLineForTaskName(lineText);
+				}
+
+				createTask(task, encodedLink);
 			},
 		});
 	}
