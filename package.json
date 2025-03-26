@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-things-link",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"description": "Seamlessly create Things tasks and projects from Obsidian",
 	"main": "main.js",
 	"scripts": {
